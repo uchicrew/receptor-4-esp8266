@@ -22,11 +22,6 @@
 #include "service.h"
 #include "ui.h"
 
-const int PIN_SDA = 4;
-const int PIN_SCL = 5;
-const int I2C_ADDR = 0x3c;
-const int LED_ERR = LED_BUILTIN;
-
 SSD1306 display(I2C_ADDR, PIN_SDA, PIN_SCL);
 OLEDDisplayUi ui (&display);
 OLEDDisplayUiState* state = ui.getUiState();
@@ -38,7 +33,14 @@ int blocking;
 
 
 void render(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
-  Card c = svc.getItem(state->currentFrame);
+  
+  int frame = state->currentFrame;
+  if (state->frameState == IN_TRANSITION && x * state->frameTransitionDirection > 0.0) {
+    // draw next frame
+    frame += state->frameTransitionDirection;
+  }
+
+  Card c = svc.getItem(frame);
 
   display->setTextAlignment(TEXT_ALIGN_RIGHT);
   display->setFont(ArialMT_Plain_10);
